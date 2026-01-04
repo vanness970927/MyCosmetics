@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Cosmetics 化妝品管家</title>
+    <title>My Vanity 雲端管家</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Noto+Sans+TC:wght@300;500&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -23,7 +23,6 @@
         h2 { font-family: 'Playfair Display', serif; font-weight: 600; letter-spacing: 4px; margin: 0; color: #5A4B4B; text-transform: uppercase; font-size: 24px; }
         .sub-title { font-size: 13px; color: var(--text-dim); letter-spacing: 2px; margin-top: 5px; display: block; }
 
-        /* 認證與輸入樣式 */
         .auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         .auth-card { background: white; padding: 40px 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(242,209,209,0.3); width: 100%; max-width: 350px; }
         .hidden { display: none !important; }
@@ -37,11 +36,14 @@
         .btn-dynamic { width: 100%; padding: 14px; background: #FCEAEA; color: #E1AFAF; border: none; border-radius: 18px; font-weight: 500; cursor: pointer; margin-top: 10px; }
         .btn-dynamic.ready { background: var(--accent-dark); color: white; }
 
-        /* 主畫面 */
         #app-screen { max-width: 500px; margin: 0 auto; }
-        .filter-bar { display: flex; gap: 6px; padding: 10px 0 20px; width: 100%; }
+        .filter-bar { display: flex; gap: 6px; padding: 10px 0 10px; width: 100%; }
         .filter-btn { flex: 1; text-align: center; padding: 10px 0; border-radius: 20px; background: #FFF; border: 1px solid #FFE4E4; color: var(--text-dim); font-size: 12px; cursor: pointer; white-space: nowrap; }
         .filter-btn.active { background: var(--accent-dark); color: white; }
+
+        /* 排序控制列 */
+        .sort-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-dim); }
+        .sort-select { width: auto; padding: 5px 10px; margin: 0; border-radius: 10px; font-size: 12px; height: 30px; background: white; }
 
         .card { background: var(--card); border-radius: 28px; padding: 20px; margin-bottom: 20px; position: relative; border: 1px solid #FFF0F0; box-shadow: 0 8px 20px rgba(242, 209, 209, 0.15); }
         .card-content { display: flex; gap: 18px; align-items: center; }
@@ -66,7 +68,7 @@
 
     <div id="login-screen" class="auth-screen">
         <div class="auth-card">
-            <div class="brand-header"><h2>My Cosmetics</h2><span class="sub-title">化妝品管理</span></div>
+            <div class="brand-header"><h2>My Vanity</h2><span class="sub-title">化妝品管理</span></div>
             <div class="input-group">
                 <input type="email" id="login-email" placeholder="Email" oninput="clearError('login-error')">
             </div>
@@ -102,7 +104,7 @@
             <span id="user-display" style="font-size: 11px; color: var(--text-dim);"></span>
             <button class="btn-sub" onclick="logout()" style="color: #FFB3B3;">登出</button>
         </div>
-        <div class="brand-header"><h2>My Cosmetics</h2><span class="sub-title">化妝品管理</span></div>
+        <div class="brand-header"><h2>My Vanity</h2><span class="sub-title">化妝台清單</span></div>
         <input type="text" id="search-input" placeholder="搜尋產品名稱..." oninput="render()">
         
         <div class="filter-bar">
@@ -110,6 +112,14 @@
             <button class="filter-btn" onclick="setFilter('底妝類', this)">底妝類</button>
             <button class="filter-btn" onclick="setFilter('彩妝類', this)">彩妝類</button>
             <button class="filter-btn" onclick="setFilter('其他類', this)">其他類</button>
+        </div>
+
+        <div class="sort-bar">
+            <span>排序方式：</span>
+            <select id="sort-order" class="sort-select" onchange="render()">
+                <option value="newest">最新加入</option>
+                <option value="expiry">依過期日期 (快到期優先)</option>
+            </select>
         </div>
         
         <div id="main-list"></div>
@@ -124,36 +134,30 @@
             </div>
             <input type="file" id="file-input" accept="image/*" style="display: none" onchange="previewFile(this)">
             <input type="text" id="in-name" placeholder="產品名稱*" oninput="checkSaveInputs()">
-            
             <select id="in-cat">
                 <optgroup label="底妝類"><option value="妝前">妝前</option><option value="粉底">粉底</option><option value="定妝">定妝</option><option value="遮瑕">遮瑕</option></optgroup>
                 <optgroup label="彩妝類"><option value="眉部">眉部</option><option value="眼部">眼部</option><option value="頰部">頰部</option><option value="唇部">唇部</option></optgroup>
                 <optgroup label="其他類"><option value="其他">其他</option></optgroup>
             </select>
-            
             <input type="text" id="in-loc" placeholder="存放位置">
             <input type="number" id="in-price" placeholder="購買金額 (NTD)*" oninput="checkSaveInputs()">
             <label style="font-size: 11px; color: var(--text-dim); margin-top: 10px; display:block;">原始保存期限*</label>
             <input type="date" id="in-exp" oninput="checkSaveInputs()">
             <input type="number" id="in-pao" placeholder="開封後效期 (月數)*" oninput="checkSaveInputs()">
-            
             <div style="display:flex; justify-content:space-between; align-items:center; margin:15px 5px;">
                 <span style="font-size:14px;">此產品已開封</span>
                 <input type="checkbox" id="in-is-opened" style="width:20px; height:20px;" onchange="toggleOpenDateField()">
             </div>
-
             <div id="open-date-container" class="hidden">
                 <label style="font-size: 11px; color: var(--text-dim); display:block;">選擇開封日期</label>
                 <input type="date" id="in-open-date">
             </div>
-
             <button id="btn-save" class="btn-dynamic" onclick="saveItem()">儲存</button>
             <button onclick="closePopup()" class="btn-sub" style="width:100%">取消</button>
         </div>
     </div>
 
     <script>
-        // Firebase 設定與初始化
         const firebaseConfig = {
             apiKey: "AIzaSyBSfNyw79pUK9fG07YA7BI1kpB8tpl4tB4",
             authDomain: "myvanity-a9d5a.firebaseapp.com",
@@ -169,7 +173,6 @@
         let vanityDb = [], curId = null, curBase64 = "", curFilter = "全部", currentUser = null;
         const categoryGroups = { '底妝類': ['妝前', '粉底', '定妝', '遮瑕'], '彩妝類': ['眉部', '眼部', '頰部', '唇部'], '其他類': ['其他'] };
 
-        // 登入註冊邏輯 (保持不變)
         function switchAuth(type) {
             clearError('login-error'); clearError('reg-error');
             document.getElementById('login-screen').classList.add('hidden');
@@ -194,14 +197,10 @@
                 if(type === 'signup') await auth.createUserWithEmailAndPassword(email, pass);
                 else await auth.signInWithEmailAndPassword(email, pass);
             } catch(e) { 
-                let msg = "";
-                switch(e.code) {
-                    case "auth/email-already-in-use": msg = "此帳號已被註冊過"; break;
-                    case "auth/invalid-email": msg = "Email 格式不正確"; break;
-                    case "auth/user-not-found": msg = "帳號不存在"; break;
-                    case "auth/wrong-password": msg = "密碼錯誤"; break;
-                    default: msg = "驗證失敗，請檢查輸入內容";
-                }
+                let msg = "驗證失敗";
+                if(e.code === "auth/email-already-in-use") msg = "此帳號已被註冊過";
+                else if(e.code === "auth/wrong-password") msg = "密碼錯誤";
+                else if(e.code === "auth/user-not-found") msg = "帳號不存在";
                 showError(errorId, msg);
             }
         }
@@ -226,19 +225,13 @@
               });
         }
 
-        // 新增功能：控制開封日期輸入框顯示
         function toggleOpenDateField() {
             const container = document.getElementById('open-date-container');
             const isChecked = document.getElementById('in-is-opened').checked;
             if (isChecked) {
                 container.classList.remove('hidden');
-                // 如果沒填日期，預設為今天
-                if (!document.getElementById('in-open-date').value) {
-                    document.getElementById('in-open-date').value = new Date().toISOString().split('T')[0];
-                }
-            } else {
-                container.classList.add('hidden');
-            }
+                if (!document.getElementById('in-open-date').value) document.getElementById('in-open-date').value = new Date().toISOString().split('T')[0];
+            } else container.classList.add('hidden');
         }
 
         function setFilter(f, btn) {
@@ -251,24 +244,38 @@
         function render() {
             const list = document.getElementById('main-list');
             const search = document.getElementById('search-input').value.toLowerCase();
+            const sortOrder = document.getElementById('sort-order').value;
             list.innerHTML = '';
             const now = new Date();
             
-            vanityDb.filter(item => {
+            let filtered = vanityDb.filter(item => {
                 const nameMatch = item.name.toLowerCase().includes(search);
                 let catMatch = (curFilter === "全部") ? true : categoryGroups[curFilter].includes(item.cat);
                 return nameMatch && catMatch;
-            })
-            .forEach(item => {
+            });
+
+            // 排序邏輯
+            if (sortOrder === "expiry") {
+                filtered.sort((a, b) => {
+                    const getDays = (item) => {
+                        if (item.openDate) {
+                            const d = new Date(item.openDate);
+                            return new Date(d.setMonth(d.getMonth() + parseInt(item.pao)));
+                        }
+                        return new Date(item.exp);
+                    };
+                    return getDays(a) - getDays(b);
+                });
+            }
+
+            filtered.forEach(item => {
                 const isOpened = !!item.openDate;
                 const useCount = item.useCount || 0;
                 const avgCost = useCount > 0 ? (item.price / useCount).toFixed(1) : item.price;
                 const formatDate = (dateStr) => dateStr ? dateStr.replace(/-/g, '/') : '未填';
                 const origExp = new Date(item.exp);
-                
                 let pDays = null;
                 if (isOpened) {
-                    // 以保存的開封日期計算 PAO
                     const openD = new Date(item.openDate);
                     const pDate = new Date(openD.setMonth(openD.getMonth() + parseInt(item.pao)));
                     pDays = Math.ceil((pDate - now) / 86400000);
@@ -299,7 +306,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="btn-use ${isOpened ? '' : 'new-item'}" onclick="handleUseAction('${item.id}', ${isOpened}, ${useCount})">
+                        <button class="btn-use" onclick="handleUseAction('${item.id}', ${isOpened}, ${useCount})">
                             ${isOpened ? "＋ 記錄一次使用" : "✨ 開封並記錄使用"}
                         </button>
                         <div style="text-align:right">
@@ -311,21 +318,14 @@
         }
 
         async function handleUseAction(id, isOpened, count) {
-            if(!currentUser) return;
             const ref = db.collection("users").doc(currentUser.uid).collection("items").doc(id);
-            if (!isOpened) {
-                // 如果是按按鈕開封，預設日期為今天
-                await ref.update({ openDate: new Date().toISOString().split('T')[0], useCount: 1 });
-            } else {
-                await ref.update({ useCount: (count || 0) + 1 });
-            }
+            if (!isOpened) await ref.update({ openDate: new Date().toISOString().split('T')[0], useCount: 1 });
+            else await ref.update({ useCount: (count || 0) + 1 });
         }
 
         function checkSaveInputs() {
-            const n = document.getElementById('in-name').value;
-            const p = document.getElementById('in-price').value;
-            const e = document.getElementById('in-exp').value;
-            const pao = document.getElementById('in-pao').value;
+            const n = document.getElementById('in-name').value, p = document.getElementById('in-price').value,
+                  e = document.getElementById('in-exp').value, pao = document.getElementById('in-pao').value;
             document.getElementById('btn-save').classList.toggle('ready', !!(n && p && e && pao));
         }
 
@@ -338,23 +338,16 @@
             document.getElementById('in-pao').value = item?.pao || "";
             document.getElementById('in-cat').value = item?.cat || "妝前";
             document.getElementById('in-loc').value = item?.loc || "";
-            
-            const isOpened = !!item?.openDate;
-            document.getElementById('in-is-opened').checked = isOpened;
-            document.getElementById('in-open-date').value = item?.openDate ? item.openDate.split('T')[0] : "";
-            
+            document.getElementById('in-is-opened').checked = !!item?.openDate;
+            document.getElementById('in-open-date').value = item?.openDate || "";
             curBase64 = item?.img || "";
-            updatePreview(); 
-            toggleOpenDateField(); // 初始化日期選擇框顯示狀態
-            checkSaveInputs();
+            updatePreview(); toggleOpenDateField(); checkSaveInputs();
         }
 
         function saveItem() {
             if(!document.getElementById('btn-save').classList.contains('ready')) return;
             const isOpened = document.getElementById('in-is-opened').checked;
-            const openDateVal = document.getElementById('in-open-date').value;
             const itemInDb = curId ? vanityDb.find(v=>v.id===curId) : null;
-            
             const data = {
                 name: document.getElementById('in-name').value,
                 price: parseFloat(document.getElementById('in-price').value),
@@ -363,9 +356,9 @@
                 cat: document.getElementById('in-cat').value,
                 loc: document.getElementById('in-loc').value,
                 img: curBase64,
-                // 如果勾選開封，則保存選擇的日期
-                openDate: isOpened ? openDateVal : null,
-                useCount: itemInDb ? (itemInDb.useCount || 0) : 0
+                openDate: isOpened ? document.getElementById('in-open-date').value : null,
+                useCount: itemInDb ? (itemInDb.useCount || 0) : 0,
+                createdAt: itemInDb?.createdAt || new Date().toISOString()
             };
             db.collection("users").doc(currentUser.uid).collection("items").doc(curId || undefined).set(data, {merge: true});
             closePopup();
