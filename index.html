@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Vanity 雲端管家</title>
+    <title>My Cosmetics 雲端管家</title>
+    
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="favicon.ico">
+    
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Noto+Sans+TC:wght@300;500&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -41,12 +45,10 @@
         .sort-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-dim); }
         .sort-select { width: auto; padding: 5px 10px; margin: 0; border-radius: 10px; font-size: 12px; height: 30px; background: white; border: 1px solid #FFE4E4; }
 
-        /* 卡片設計優化：防止標籤遮擋名稱 */
         .card { background: var(--card); border-radius: 28px; padding: 20px; margin-bottom: 20px; position: relative; border: 1px solid #FFF0F0; box-shadow: 0 8px 20px rgba(242, 209, 209, 0.15); }
         .card-content { display: flex; gap: 18px; align-items: flex-start; }
         .img-box { width: 85px; height: 85px; border-radius: 20px; background: #FFF5F5; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 1px solid #FFE4E4; flex-shrink: 0; }
         
-        /* 標籤改為行內顯示，不擋文字 */
         .status-badge { display: inline-block; font-size: 10px; padding: 3px 10px; border-radius: 8px; font-weight: 500; margin-bottom: 8px; }
         .status-opened { background: var(--opened); color: #769363; }
         .status-unopened { background: #F5F5F5; color: #AAA; }
@@ -69,7 +71,7 @@
 
     <div id="login-screen" class="auth-screen">
         <div class="auth-card">
-            <div class="brand-header"><h2>My Vanity</h2><span class="sub-title">化妝品管理</span></div>
+            <div class="brand-header"><h2>My Cosmetics</h2><span class="sub-title">化妝品管理</span></div>
             <div class="input-group">
                 <input type="email" id="login-email" placeholder="Email" oninput="clearError('login-error')">
             </div>
@@ -105,7 +107,7 @@
             <span id="user-display" style="font-size: 11px; color: var(--text-dim);"></span>
             <button class="btn-sub" onclick="logout()" style="color: #FFB3B3;">登出</button>
         </div>
-        <div class="brand-header"><h2>My Vanity</h2><span class="sub-title">化妝台清單</span></div>
+        <div class="brand-header"><h2>My Cosmetics</h2><span class="sub-title">化妝台清單</span></div>
         <input type="text" id="search-input" placeholder="搜尋產品名稱..." oninput="render()">
         
         <div class="filter-bar">
@@ -159,6 +161,7 @@
     </div>
 
     <script>
+        // Firebase 設定與後端邏輯保持不變
         const firebaseConfig = {
             apiKey: "AIzaSyBSfNyw79pUK9fG07YA7BI1kpB8tpl4tB4",
             authDomain: "myvanity-a9d5a.firebaseapp.com",
@@ -281,7 +284,6 @@
                 }
                 const origDays = Math.ceil((origExp - now) / 86400000);
 
-                // 渲染調整：標籤現在在名稱上方，且對齊右側
                 list.innerHTML += `
                     <div class="card">
                         <div class="card-content">
